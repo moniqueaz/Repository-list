@@ -51,17 +51,34 @@ export default class Main extends Component {
     this.setState({ loading: true });
 
     const { newRepo, repositories } = this.state;
-    const response = await api.get(`repos/${newRepo}`);
+    const response = await api
+      .get(`repos/${newRepo}`)
+      .then(response => {
+        return response;
+      })
+      .catch(error => {
+        return error;
+      });
 
-    const data = {
-      name: response.data.full_name,
-    };
+    console.log('response: ', response.status);
+    console.log('response: ', response);
 
-    this.setState({
-      repositories: [...repositories, data],
-      newRepo: '',
-      loading: false,
-    });
+    if (response.status === 200) {
+      const data = {
+        name: response.data.full_name,
+      };
+      this.setState({
+        repositories: [...repositories, data],
+        newRepo: '',
+        loading: false,
+      });
+    } else {
+      this.setState({
+        loading: false,
+      });
+    }
+
+    console.log(this.state);
   };
 
   render() {
@@ -89,8 +106,8 @@ export default class Main extends Component {
         </Form>
 
         <List>
-          {repositories.map(repository => (
-            <li key={repository.name}>
+          {repositories.map((repository, index) => (
+            <li key={String(`${repository.name}_${index}`)}>
               <span>{repository.name}</span>
               <Link to={`/repository/${encodeURIComponent(repository.name)}`}>
                 Detalhes
