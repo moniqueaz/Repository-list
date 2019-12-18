@@ -1,4 +1,9 @@
-import React, { Component } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
@@ -7,23 +12,33 @@ import Container from '../../components/Containers';
 
 import { Loading, Owner, IssueList } from './styles';
 
-export default class Repository extends Component {
-  static propTyoes = {
+function Repository() {
+  const propTyoes = {
     match: PropTypes.shape({
       params: PropTypes.shape({
         repository: PropTypes.string,
       }),
     }).isRequired,
   };
-  constructor(props) {
-    super(props);
-    this.state = {
-      repository: {},
-      issues: [],
-      loading: true,
-    };
-  }
-  async componentDidMount() {
+
+  const [repository, setRepository] = useState({
+    repository: {}
+  })
+  const [issues, setIssues] = useState({
+    issues: []
+  })
+  const [loading, setLoading] = useState({
+    loading: true,
+  })
+
+  const handleAdd = useCallback(() => {
+    setRepository({repository: repository.data})
+    setIssues({issues: issues.data})
+    setLoading({loading: false})
+  }), [repository, issues];
+
+  // didMount
+  useEffect(async () => {
     const { match } = this.props;
 
     const repoName = decodeURIComponent(match.params.repository);
@@ -42,43 +57,51 @@ export default class Repository extends Component {
       }),
     ]);
 
-    this.setState({
-      repository: repository.data,
-      issues: issues.data,
-      loading: false,
-    });
-  }
-  render() {
-    const { repository, issues, loading } = this.state;
+    handleAdd(repository, issues);
 
-    if (loading) {
-      return <Loading>Carregando...</Loading>;
-    }
-    return (
-      <Container>
-        <Owner>
-          <Link to="/">Voltar aos respositorios</Link>
-          <img src={repository.owner.avatar_url} alt={repository.owner.login} />
-          <h1>{repository.name}</h1>
-          <p>{repository.description}</p>
-        </Owner>
-        <IssueList>
-          {issues.map(issue => (
-            <li key={String(issue.id)}>
-              <img src={issue.user.avatar_url} alt={issue.user.login} />
-              <div>
-                <strong>
-                  <a href={issue.html_url}>{issue.title}</a>
-                  {issue.labels.map(label => (
-                    <span key={String(label.id)}>{label.name}</span>
-                  ))}
-                </strong>
-                <p>{issue.user.login}</p>
-              </div>
-            </li>
-          ))}
-        </IssueList>
-      </Container>
-    );
+    // didWillMount
+    return () => {};
+  }, []);
+  // didUpdate
+  useEffect(() => {
+    // didWillMount
+    return () => {};
+  }, [xx]);
+
+  const xx = useMemo(() => xx, [xx]);
+
+  const { repository, issues, loading } = state;
+
+  if (loading) {
+    return <Loading>Carregando...</Loading>;
   }
+
+  return (
+    <Container>
+      <Owner>
+        <Link to="/">Voltar aos respositorios</Link>
+        <img src={repository.owner.avatar_url} alt={repository.owner.login} />
+        <h1>{repository.name}</h1>
+        <p>{repository.description}</p>
+      </Owner>
+      <IssueList>
+        {issues.map(issue => (
+          <li key={String(issue.id)}>
+            <img src={issue.user.avatar_url} alt={issue.user.login} />
+            <div>
+              <strong>
+                <a href={issue.html_url}>{issue.title}</a>
+                {issue.labels.map(label => (
+                  <span key={String(label.id)}>{label.name}</span>
+                ))}
+              </strong>
+              <p>{issue.user.login}</p>
+            </div>
+          </li>
+        ))}
+      </IssueList>
+    </Container>
+  );
 }
+
+export default Repository;
